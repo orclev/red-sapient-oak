@@ -65,7 +65,7 @@ class QueueController {
         .div(Math.max(queue.size, 1))
   }
 
-  fun sortQueue(now : ZonedDateTime): List<QueueEntry> {
+  private fun sortQueue(now : ZonedDateTime): List<QueueEntry> {
     synchronized(queue) {
       val queues = queue.groupBy { it.getEntryType() == QueueEntry.EntryType.Manager }
       val managers = queues.get(true).orEmpty().sortedWith(QueueEntry.QueueComparator(now))
@@ -74,3 +74,12 @@ class QueueController {
     }
   }
 }
+
+@ResponseStatus(code = HttpStatus.NOT_FOUND, reason = "Entry not found in queue")
+class EntryNotFoundException(id: Int): Exception("ID $id not found in queue") {}
+
+@ResponseStatus(code = HttpStatus.NOT_FOUND, reason = "Empty Queue")
+class EmptyQueueException: Exception("Empty Queue") {}
+
+@ResponseStatus(code = HttpStatus.CONFLICT, reason = "Entry Already Exists")
+class DuplicateEntryException(public val id : Int) : Exception("Duplicate entry: " + id) {}
